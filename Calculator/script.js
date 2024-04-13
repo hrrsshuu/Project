@@ -1,83 +1,56 @@
-const display = document.getElementById('inputbox');
-const buttons = document.querySelectorAll('button');
-const buttonsArray = Array.from(buttons);
-// const operatorButtons = document.querySelectorAll('[data-operator]');
-// const clearButton = document.querySelector('[data-clear]');
-// const equalsButton = document.querySelector('[data-equals]');
+document.addEventListener('DOMContentLoaded', function () {
+  const inputBox = document.getElementById('inputbox');
+  const buttons = document.querySelectorAll('button');
 
-let firstOperand = null;
-let secondOperand = null;
-let currentOperator = null;
+  let currentInput = '';
+  let calculation = '';
 
-buttonsArray.forEach(button => {
-  button.addEventListener('click', (e) => {
-    const buttonText = e.target.textContent;
+  buttons.forEach(button => {
+      button.addEventListener('click', () => {
+          const buttonText = button.textContent;
 
-    if (buttonText === 'AC') {
-      clearCalculator();
-    } else if (buttonText === '+' || buttonText === '-' || buttonText === '*' || buttonText === '/') {
-      handleOperator(buttonText);
-    } else if (buttonText === '=') {
-      calculateResult();
-    } else {
-      appendNumber(buttonText);
-    }
+          // Handle numeric input
+          if (!isNaN(parseInt(buttonText)) || buttonText === '.') {
+              currentInput += buttonText;
+              inputBox.value = currentInput;
+          }
 
-    console.log(e.target.innerHTML);
+          // Handle operator input
+          else if (button.classList.contains('operator')) {
+              // Clear input
+              if (buttonText === 'AC') {
+                  currentInput = '';
+                  calculation = '';
+                  inputBox.value = '';
+              }
+              // Clear last entry
+              else if (buttonText === 'C') {
+                  currentInput = currentInput.slice(0, -1);
+                  inputBox.value = currentInput;
+              }
+              // Percentage calculation
+              else if (buttonText === '%') {
+                  currentInput = (parseFloat(currentInput) / 100).toString();
+                  inputBox.value = currentInput;
+              }
+              // Basic operators
+              else {
+                  // If there is no current input, do nothing
+                  if (currentInput === '') return;
+                  calculation += currentInput + buttonText;
+                  currentInput = '';
+                  inputBox.value = calculation;
+              }
+          }
+
+          // Handle equal button
+          else if (buttonText === '=') {
+              if (calculation === '') return;
+              calculation += currentInput;
+              currentInput = eval(calculation).toString();
+              calculation = '';
+              inputBox.value = currentInput;
+          }
+      });
   });
 });
-
-function appendNumber(number) {
-  if (currentOperator === null) {
-    firstOperand = firstOperand!== null? parseFloat(`${firstOperand}${number}`) : number;
-    display.value = firstOperand;
-  } else {
-    secondOperand = secondOperand!== null? parseFloat(`${secondOperand}${number}`) : number;
-    display.value = secondOperand;
-  }
-}
-
-function handleOperator(operator) {
-  if (firstOperand!== null && secondOperand!== null) {
-    calculateResult();
-  }
-
-  currentOperator = operator;
-}
-
-function calculateResult() {
-  if (firstOperand!== null && secondOperand!== null && currentOperator!== null) {
-    let result;
-
-    switch (currentOperator) {
-      case '+':
-        result = firstOperand + secondOperand;
-        break;
-      case '-':
-        result = firstOperand - secondOperand;
-        break;
-      case '*':
-        result = firstOperand * secondOperand;
-        break;
-      case '/':
-        if (secondOperand === 0) {
-          alert('Cannot divide by zero');
-          return;
-        }
-        result = firstOperand / secondOperand;
-        break;
-    }
-
-    display.value = result;
-    firstOperand = result;
-    secondOperand = null;
-    currentOperator = null;
-  }
-}
-
-function clearCalculator() {
-  firstOperand = null;
-  secondOperand = null;
-  currentOperator = null;
-  display.value = '';
-}
